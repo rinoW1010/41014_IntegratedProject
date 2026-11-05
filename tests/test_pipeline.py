@@ -1,5 +1,5 @@
 import numpy as np
-from turtlebot_project.model import motion, marker_measurement, wrap, wheel_rates
+from turtlebot_project.model import motion, wrap, wheel_rates
 
 
 def test_wheel_commands_and_motion():
@@ -12,14 +12,14 @@ def test_wheel_commands_and_motion():
 def test_physics_encoder_agreement_and_real_rendered_detection(tmp_path):
     from turtlebot_project.simulation import Simulation
     from turtlebot_project.vision import MarkerCamera
-    sim = Simulation(tmp_path)
+    sim = Simulation(tmp_path, start_pose=(1.85, -0.30, np.deg2rad(15)))
     try:
         start = sim.evaluation_pose()
         detection = MarkerCamera().detect(sim.image())
         assert detection is not None
-        expected = marker_measurement(start)
-        assert abs(detection.measurement[0]-expected[0]) < 0.25
-        assert abs(wrap(detection.measurement[1]-expected[1])) < 0.02
+        error = detection.pose - start
+        assert np.linalg.norm(error[:2]) < 0.05
+        assert abs(wrap(error[2])) < np.deg2rad(3)
         odo = start.copy()
         for _ in range(40):
             odo = motion(odo, sim.step([0.12, 0]))

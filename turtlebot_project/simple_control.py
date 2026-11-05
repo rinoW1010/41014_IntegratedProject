@@ -8,19 +8,19 @@ SPEED = 0.08
 
 def safe_command(command, angles, ranges):
     """
-    Use a 25 degree half sector to check the direction of forward travel.
-    Reading under 0.23m stops the robot. In place rotation can be used to re-align the robot
+    check 25 degrees either side of straight ahead. A reading under 0.23 m
+    stops forward motion. The robot can still turn on the spot.
     """
     front = ranges[np.abs(angles) <= np.deg2rad(25)]
     blocked = not front.size or not np.isfinite(front).all() or front.min() < 0.23
     return (0, 0) if blocked and command[0] > 0 else command
 
-def track(pose, target, tangent, speed):
+def track(pose, target, tangent, speed, heading_gain=1.8):
     delta = target - pose[:2]
     c, s = np.cos(pose[2]), np.sin(pose[2])
     along = c*delta[0] + s*delta[1]
     across = -s*delta[0] + c*delta[1]
     heading = wrap(tangent-pose[2])
     v = np.clip(speed*np.cos(heading) + 0.9*along, 0, MAX_V)
-    w = np.clip(1.8*heading + 2.8*across, -MAX_W, MAX_W)
+    w = np.clip(heading_gain*heading + 2.8*across, -MAX_W, MAX_W)
     return v, w
