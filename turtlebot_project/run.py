@@ -24,7 +24,7 @@ def run(output='outputs/steps_1_to_3', duration=8., movement='straight', seed=1)
         raise ValueError('use at least 0.05 seconds, or 16 seconds for the square')
     output=Path(output); output.mkdir(parents=True,exist_ok=True)
     camera=MarkerCamera()
-    simulation=Simulation(output,seed=seed)
+    simulation=Simulation(output,seed=seed, random_start=True)
     # this is the configured start, not a pose read from the simulator.
     odometry=np.array([-1.8,-.65,0.])
     records=[]

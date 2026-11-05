@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 import cv2
 import numpy as np
-from .model import MARKER_SIDE
-
+from .model import MARKER_SIDE, CAMERA_FORWARD, wrap
+from .config import MARKER_POSITION
 
 @dataclass
 class Detection:
@@ -11,6 +11,30 @@ class Detection:
     covariance: np.ndarray
     corners: np.ndarray
     reprojection_error: float
+    pose: np.ndarray
+    pose_covariance: np.ndarray
+
+def transform(rotation, translation):
+    T = np.eye(4)
+    T[:3, :3] = rotation
+    T[:3, 3] = np.asarray(translation).reshape(3)
+    return T
+
+def robot_pose_from_marker(rvec, tvec):
+    R_CM, _ = cv2.Rodrigues(rvec)
+    T_CM = transform(R_CM, tvec)
+
+    # Columns: marker x, y, z axes expressed in world coords
+    R_WM = np.array([[0, 0, -1], [-1, 0, 0], [0, 1, 0]])
+    T_WM = transform(R_WM, MARKER_POSITION)
+
+    # OpenCV camera axes: right, down, forward
+    # Express those axes in robot coordinates: -y, -z, +x
+    R_BC = np.array([[0, 0, 1], [-1, 0, 0], [0, -1, 0]])
+    T_BC = transform(R_BC, [CAMERA_FORWARD, 0, 0.15])
+
+    T_WB = T_WM @ np.linalg.inv(T_CM) @ np.linalg.inv(T_BC)
+    return np.array([T_WB[0, 3], T_WB[1, 3], wrap(np.arctan2(T_WB[1, 0], T_WB[0, 0]))])
 
 
 class MarkerCamera:
@@ -43,4 +67,14 @@ class MarkerCamera:
         measurement = np.array([distance, np.arctan2(-tx, tz)])
         # start with a cautious noise estimate and check it against measurements before submission.
         covariance = np.diag([(0.008 + 0.006 * distance**2)**2, np.deg2rad(0.4 + 0.15*distance)**2])
-        return Detection(measurement, covariance, pixels, error)
+        
+        pose = robot_pose_from_marker(rvec, tvec)
+        if not np.isfinite(pose).all():
+            return None
+
+        # Starting uncertainty assumptions. Replace using calibration results if available.
+        position_std = 0.04 + 0.015 * distance**2
+        heading_std = np.deg2rad(3 + distance)
+        pose_covariance = np.diag([position_std**2, position_std**2, heading_std**2])
+
+        return Detection(measurement, covariance, pixels, error, pose, pose_covariance)
