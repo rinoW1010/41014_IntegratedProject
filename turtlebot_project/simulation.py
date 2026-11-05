@@ -13,7 +13,7 @@ from .scene import create_scene
 from .config import (BOUNDS, position_is_free, LIDAR_ANGLES, LIDAR_MAX, LIDAR_SIGMA)
 
 class Simulation:
-    def __init__(self, output, seed=1, encoder_noise=0.25, traction=0.9, start_y=-0.65, random_start=False):
+    def __init__(self, output, seed=1, encoder_noise=0.25, traction=0.9, start_y=-0.65, random_start=False, start_pose=None):
         self._model = mujoco.MjModel.from_xml_path(str(create_scene(Path(output) / 'scene.xml').resolve()))
         self._data = mujoco.MjData(self._model)
 
@@ -22,6 +22,15 @@ class Simulation:
         spawn_rng = np.random.default_rng(spawn_seed)
         self._rng = np.random.default_rng(sensor_seed)
         self._data.qpos[1] = start_y
+        # Uses set starting pose if there is one.
+        # Outputs error message if multiple start pose options are provided
+        if start_pose is not None:
+            x, y, yaw = start_pose
+            if random_start or not position_is_free((x, y)):
+                raise ValueError("Use one collision free start option")
+            self._data.qpos[:2] = [x, y]
+            self._data.qpos[3:7] = [np.cos(yaw/2), 0, 0, np.sin(yaw/2)]
+
         if random_start:
             xmin, xmax, ymin, ymax = BOUNDS
             for _ in range (10000):
