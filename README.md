@@ -106,17 +106,20 @@ requires accepted camera updates. To turn the simulated charge indicator
 green, the estimated position and heading must stay within 0.04 m and 5°
 of the dock with a zero motion command for one second. We check the final true pose separately when scoring the run. We use the same room and obstacle positions each time. The marker needs to be visible at the start.
 
-## contributions and sources
+## contributions, sources and gen AI aknowledgement 
 
-The repository history records initial setup, motion, odometry and camera
-checks under rinoW1010. Tom Kelsey's commits added the room configuration,
+Ryan Cooper carried out the initial setup, motion, odometry and camera
+checks. Tom Kelsey's commits added the room configuration,
 obstacles, random and repeatable starts, camera-pose EKF and feedback with
-LiDAR safety. confirm the submission contribution statements with the team.
+LiDAR safety.
 
-the project uses the supplied tutorials for motion, frames, sensing,
+The project uses the supplied tutorials for motion, frames, sensing,
 estimation and feedback. robot geometry and the simulation and vision APIs
-were checked against the project sources. [ROBOTIS model](https://github.com/ROBOTIS-GIT/turtlebot3_simulations/blob/main/turtlebot3_gazebo/models/turtlebot3_burger/model.sdf) · [MuJoCo docs](https://mujoco.readthedocs.io/en/stable/python.html) · [OpenCV ArUco docs](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html)
+were checked against the project sources.
+ [ROBOTIS model](https://github.com/ROBOTIS-GIT/turtlebot3_simulations/blob/main/turtlebot3_gazebo/models/turtlebot3_burger/model.sdf) · 
+ [MuJoCo docs](https://mujoco.readthedocs.io/en/stable/python.html) · 
+ [OpenCV ArUco docs](https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html)
 
 OpenAI Codex helped review the brief and tutorials, generate and debug the
-initial simulation, organise the stages, and implement and verify the final
-fixed-route integration and assessment evidence from the supplied guide.
+initial simulation, organise the stages, implement and verify the final
+fixed-route integration and assessment evidence from the supplied guide, and edit the final 5 min demo video.
