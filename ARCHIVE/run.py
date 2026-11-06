@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 import cv2
 import numpy as np
-from .model import DT, motion, marker_measurement
-from .simulation import Simulation
-from .vision import MarkerCamera
+from ..turtlebot_project.model import DT, motion, marker_measurement
+from ..turtlebot_project.simulation import Simulation
+from ..turtlebot_project.vision import MarkerCamera
 from .evaluation import save_results
 
 

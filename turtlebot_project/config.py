@@ -18,7 +18,6 @@ BOARD_RECT = (2.995, 3.005, -0.18, 0.18)
 
 ROBOT_RADIUS = 0.12 
 CLEARANCE = 0.10
-GRID = 0.10
 LIDAR_MAX = 6.0
 LIDAR_SIGMA = 0.01
 LIDAR_ANGLES = np.linspace(-np.pi, np.pi, 180, endpoint=False)
@@ -32,7 +31,6 @@ DOCK_POSE = np.array([2.55, 0, 0])
 DOCK_POSITION_TOL = 0.04
 DOCK_HEADING_TOL = np.deg2rad(5)
 DOCK_HOLD = 1
-TRIAL_LIMIT = 180
 
 def position_is_free(xy, margin=ROBOT_RADIUS + CLEARANCE):
     """Check if a position is free of obstacles."""

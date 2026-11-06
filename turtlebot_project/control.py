@@ -1,6 +1,6 @@
 import numpy as np
 from .model import wrap
-from .config import MAX_V, MAX_W, PRE_DOCK, DOCK_POSE
+from .config import MAX_V, MAX_W, PRE_DOCK
 
 START = (0.3, 1.58, np.deg2rad(-30))
 ROUTE = np.array([[1.3, 1.5], [1.65, 0.65], PRE_DOCK])

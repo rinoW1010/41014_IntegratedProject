@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from .model import wrap
+from ..turtlebot_project.model import wrap
 
 
 def save_results(output, records, stage, collision, completed=None):

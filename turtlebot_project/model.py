@@ -13,12 +13,6 @@ DT = 0.05
 def wrap(angle):
     return (angle + np.pi) % (2 * np.pi) - np.pi
 
-
-def rotation(theta):
-    c, s = np.cos(theta), np.sin(theta)
-    return np.array([[c, -s], [s, c]])
-
-
 def motion(state, wheel_distances):
     left, right = wheel_distances
     distance = (left + right) / 2
@@ -27,9 +21,6 @@ def motion(state, wheel_distances):
     result = state + np.array([distance * np.cos(mid), distance * np.sin(mid), turn])
     result[2] = wrap(result[2])
     return result
-
-
-
 
 def marker_measurement(state):
     """work out the range and bearing from the camera to the marker centre."""
