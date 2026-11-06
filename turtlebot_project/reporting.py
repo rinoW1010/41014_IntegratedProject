@@ -52,7 +52,7 @@ def save_trial_plots(output):
             estimate, actual, std = [np.rad2deg(v) for v in (estimate, actual, std)]
         ax.plot(t, actual, label="Truth")
         ax.plot(t, estimate, label="EKF")
-        ax.fill_between(t, estimate-2*std, estimate+2*std, alpha=.2, label="EKF Â±2 std")
+        ax.fill_between(t, estimate-2*std, estimate+2*std, alpha=.2, label="EKF ±2 std")
         ax.set(xlabel="Time (s)", ylabel=label)
         ax.legend()
         ax.grid(alpha=.2)

@@ -10,6 +10,13 @@ it, and forward LiDAR can stop it if the route gets blocked.
 | members | rinoW1010 and Tom Kelsey, from the local Git history. Confirm the full names and roster before submission. |
 | repository | [41014_IntegratedProject](https://github.com/rinoW1010/41014_IntegratedProject) |
 
+## demo video
+
+The five-minute demo shows the normal run and a second run with a 6-degree
+change in starting heading. Both finish with the charging indicator on.
+The video shows the EKF estimate and true state for x, y and heading, with
+uncertainty during each run and in the plots. [Download the demo](demo/TurtleBot_demo.mp4)
+
 ## run it on Windows
 
 Open PowerShell in this folder. Use Python 3.12 for the pinned requirements.
@@ -17,22 +24,14 @@ Open PowerShell in this folder. Use Python 3.12 for the pinned requirements.
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe check_stage5.py
-.\.venv\Scripts\python.exe check_stage6.py
-.\.venv\Scripts\python.exe check_block.py
-.\.venv\Scripts\python.exe -m turtlebot_project.simple_run
-.\.venv\Scripts\python.exe plot_trial.py outputs/nominal
-.\.venv\Scripts\python.exe -m turtlebot_project.simple_run --varied
-.\.venv\Scripts\python.exe plot_trial.py outputs/varied
+.\.venv\Scripts\python.exe main.py --output outputs/nominal
+.\.venv\Scripts\python.exe main.py --varied --output outputs/varied
 ```
 
-Each run saves the reference, estimated pose, true pose and wheel-only pose
-in `trial.csv`, plus whether it docked and the errors in `metrics.json`. The plot shows
-the route and the estimated world x with its ±2 standard deviation band.
-Use `--frames` with a fresh `--output` directory to save a frame sequence at
-5 Hz. The earlier movement check still runs with `python run.py` inside the
-environment.
+Each run saves `trial.csv` and `metrics.json` with the pose data and docking
+result. the `uncertainty.png` plot shows the estimate, truth and the band
+two standard deviations either side of the estimate for each state.
+Use `--frames` to save overview images at 5 Hz as well.
 
 ## motion model
 
@@ -106,8 +105,6 @@ At the staging point the robot turns towards the marker. The final approach
 requires accepted camera updates. To turn the simulated charge indicator
 green, the estimated position and heading must stay within 0.04 m and 5°
 of the dock with a zero motion command for one second. We check the final true pose separately when scoring the run. We use the same room and obstacle positions each time. The marker needs to be visible at the start.
-
-![Nominal path and uncertainty](evidence/nominal.png)
 
 ## contributions and sources
 
