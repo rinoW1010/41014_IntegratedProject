@@ -1,10 +1,11 @@
 """Work out the differential-drive motion using radians and metres."""
 import numpy as np
+from .config import MARKER_POSITION
 
 WHEEL_RADIUS = 0.033
 TRACK_WIDTH = 0.160
 CAMERA_FORWARD = 0.060
-MARKER_XY = np.array([3.0, 0.0])
+MARKER_XY = MARKER_POSITION[:2]
 MARKER_SIDE = 0.24
 DT = 0.05
 

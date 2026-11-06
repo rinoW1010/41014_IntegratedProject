@@ -1,6 +1,7 @@
-"""follow the fixed route and use the camera to confirm docking."""
+"""
+Follow the fixed route and use the camera to confirm docking.
+"""
 from pathlib import Path
-import argparse
 import json
 import numpy as np
 from .config import DOCK_POSE, DOCK_POSITION_TOL, DOCK_HEADING_TOL, DOCK_HOLD, position_is_free
@@ -8,9 +9,9 @@ from .estimation import PoseEKF
 from .model import DT, motion, wrap
 from .simulation import Simulation
 from .vision import MarkerCamera
-from .simple_control import START, ROUTE, SPEED, safe_command, track
+from .control import START, ROUTE, SPEED, safe_command, track
 
-def run(varied=False, *, output=None, frames=False, marker_loss=False, heading_gain=1.8):
+def mission(varied=False, *, output=None, frames=False, marker_loss=False, heading_gain=1.8):
     name = "marker_loss" if marker_loss else "varied" if varied else "nominal"
     output = Path(output) if output is not None else Path("outputs") / name
     if frames:
@@ -64,7 +65,8 @@ def run(varied=False, *, output=None, frames=False, marker_loss=False, heading_g
             held = held + DT if docking and near and aligned and ekf.accepted and applied == (0., 0.) else 0.
             charging = held >= DOCK_HOLD
             truth = sim.evaluation_pose()  # use the true pose to check the run.
-            records.append([sim.time, *ref, *ekf.x, *truth, *odom, ekf.P[0,0], int(ekf.accepted)])
+            records.append([sim.time, *ref, *ekf.x, *truth, *odom, ekf.P[0,0], 
+                            int(ekf.accepted), *applied, int(docking), int(aligning), held])
             if frames and len(records) % 4 == 0:
                 sim.save_overview(output / "frames" / f"{len(records)//4:04d}.png")
             if sim.collision or charging:
@@ -77,8 +79,13 @@ def run(varied=False, *, output=None, frames=False, marker_loss=False, heading_g
         if charging:
             sim._model.geom("charge_light").rgba[:] = [0.1, 1., 0.1, 1.]
         sim.save_overview(output/"finish.png")
+        if frames:
+            from shutil import copyfile
+            copyfile(output / "finish.png",
+                     output / "frames" / f"{len(records)//4+1:04d}.png")
         np.savetxt(output/"trial.csv", records, delimiter=",", comments="",
-                   header="t,rx,ry,x,y,yaw,tx,ty,tyaw,ox,oy,oyaw,Pxx,accepted")
+                   header="t, rx, ry, x, y, yaw, tx, ty, tyaw, ox, oy, oyaw, " \
+                   "Pxx, accepted, v, w, docking, aligning, held")
         pos_error = np.linalg.norm(truth[:2]-DOCK_POSE[:2])
         yaw_error = abs(wrap(truth[2]-DOCK_POSE[2]))
         success = bool(charging and not sim.collision and pos_error <= DOCK_POSITION_TOL
@@ -92,6 +99,7 @@ def run(varied=False, *, output=None, frames=False, marker_loss=False, heading_g
             "ekf_position_rmse_m": float(np.sqrt(np.mean(np.sum((rows[:, 3:5] - rows[:, 6:8])**2, axis=1)))),
             "odometry_position_rmse_m": float(np.sqrt(np.mean(np.sum((rows[:, 9:11] - rows[:, 6:8])**2, axis=1)))),
             "driven_path_clear_with_margin": bool(all(position_is_free(row[6:8]) for row in rows)),
+            "false_charging": bool(charging and not success)
         }
         summary = json.dumps(metrics, indent=2)
         (output / "metrics.json").write_text(summary + "\n", encoding="utf-8")
@@ -99,14 +107,3 @@ def run(varied=False, *, output=None, frames=False, marker_loss=False, heading_g
         return metrics
     finally:
         sim.close()
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--varied", action="store_true")
-    parser.add_argument("--output", type=Path)
-    parser.add_argument("--frames", action="store_true")
-    parser.add_argument("--marker-loss", action="store_true", help="skip camera corrections on the final approach")
-    parser.add_argument("--heading-gain", type=float, default=1.8)
-    args = parser.parse_args()
-    run(args.varied, output=args.output, frames=args.frames, marker_loss=args.marker_loss,
-        heading_gain=args.heading_gain)
