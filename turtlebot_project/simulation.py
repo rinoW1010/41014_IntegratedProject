@@ -113,9 +113,16 @@ class Simulation:
         R = self._data.xmat[self._base].reshape(3, 3)
         return np.array([*self._data.xpos[self._base, :2], np.arctan2(R[1, 0], R[0, 0])])
 
-    def save_overview(self, path):
-        self._renderer.update_scene(self._data, camera='overview')
-        cv2.imwrite(str(path), cv2.cvtColor(self._renderer.render(), cv2.COLOR_RGB2BGR))
+    def overview_image(self):
+        self._renderer.update_scene(self._data, camera = "overview")
+        return self._renderer.render()
 
+    def save_overview(self, path):
+        cv2.imwrite(str(path), cv2.cvtColor(self.overview_image(), cv2.COLOR_RGB2BGR))
+
+    def set_charging(self, charging):
+        colour = [0.1, 1, 0.1, 1] if charging else [0.4, 0.4, 0.4, 1]
+        self._model.geom("charge_light").rgba[:] = colour
+    
     def close(self):
         self._renderer.close()
